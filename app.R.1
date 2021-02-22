@@ -1,0 +1,84 @@
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
+library(shinyjs)
+library(shinyWidgets)
+# # definir distintas partes de la UI
+# header <- dashboardHeader()
+# sidebar <- dashboardSidebar()
+# body <- dashboardBody()
+# 
+# # Define UI for application that draws a histogram
+# ui <- dashboardPage(title = "PCA explorer",
+#                     header = header,
+#                     sidebar = sidebar,
+#                     body = body )
+# 
+# # Define server logic required to draw a histogram
+# server <- function(input, output) {
+# 
+# }
+# 
+# # Run the application
+# shinyApp(ui = ui, server = server)
+
+#
+ui <- navbarPage(
+        title ="HolaCaracola",
+        theme = shinytheme("superhero"),
+        collapsible = TRUE,
+        tabPanel("Home",
+                 column(
+                     width = 2,
+                     box(
+                         width = 12,
+                         height = "900px",
+                         title = "",
+                         status = "info",
+                         column(width = 11, offset = 1,
+                         br(),
+                         fileInput(
+                             "matriz",
+                             "Select matrix",
+                             accept = c(".xlsx", ".tsv", ".csv"),
+                             buttonLabel = "File",
+                             width = "90%"
+                         ),
+                         p("Are samples in matrix by rows or columns?"),
+                         switchInput("samplesrows", value=TRUE, onLabel = "rows", 
+                                     offLabel = "cols", size = "normal"),
+                         br(),
+                         fileInput(
+                             "sampledata",
+                             "Select Sample data file",
+                             accept = c(".xlsx", ".tsv", ".csv"),
+                             buttonLabel = "File",
+                             width = "90%"
+                         )
+                         ),# fin column box
+                         tags$div(class = "bottomdiv",
+                                  column(width = 9, offset = 1,
+                                  tags$hr(),
+                            fluidRow(
+                                  actionButton("aboutButton", "About"),
+                                  actionButton(inputId = "resetbutton", "Reset", size = "md", color = "danger"))
+                            ),
+                                  style="position: absolute; bottom: 10px; width:100%;")
+                         )
+                 )), 
+        tabPanel("PCAplot"),
+        tabPanel("CorrPlot"),
+        tabPanel("EigenPlot"),
+        tabPanel("HierachicalPlot"),
+        tags$script(HTML("var header = $('.navbar > .container-fluid > .navbar-collapse');
+                       header.append('<div style=\"float:right\"><ul style=\"list-style-type: none;margin:0;padding:0;overflow:hidden;\"><li style=\"float:left;margin-right: 10px;margin-top: 12px;height: 30px;\"><a href=\"https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx\"><img src=\"mircen.png\" alt=\"imib\", style=\"width:90px;\"></a></li><li style=\"float:left;\"><a href=\"http://www.imib.es/web/personal.jsf?id=7961\"><img src=\"imib.png\" alt=\"imib\", style=\"width:60px;\"></a></li></div>');
+                       console.log(header)")),
+        includeCSS("./www/mystyle.css"),
+        setShadow( class = "box")
+    )
+#
+server <- function(input, output, session){
+
+}
+#
+shinyApp(ui = ui, server = server)
