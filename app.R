@@ -4,7 +4,11 @@ library(shinythemes)
 library(shinyjs)
 library(shinyWidgets)
 library(shinyBS)
+library(tidyverse)
+library(FactoMineR)
+library(factoextra)
 #
+
 ui <- navbarPage(
         title ="HolaCaracola",
         theme = shinytheme("superhero"),
@@ -23,21 +27,25 @@ ui <- navbarPage(
 #
 server <- function(input, output, session){
     
+    tr <-reactiveValues(count=0)
     matrizDatos <- reactiveValues()
     
+    
+## tab Home #########################################
     observeEvent(input$matriz,{ # cargar mtriz datos
         matrizDatos$datos <- read.table(input$matriz$datapath, header = T, sep = ";", row.names = 1)
+        
     }) 
-    
+    observeEvent(input$samplesrows,{
+        validate(need(input$matriz,""))
+        tr$count=tr$count+1
+        if(tr$count>=1){
+            matrizDatos$datos <- t(matrizDatos$datos)
+            }
+        })
     observeEvent(input$sampledata,{ # cargar coldata
         matrizDatos$samples <- read.table(input$sampledata$datapath, header = T, sep = ";")
     }) 
-    
-    output$varsel <- renderUI({
-        selectInput("varselected", label="Select vars (max. 3)",
-                       choices = names(matrizDatos$samples), multiple=3, selected=NULL)
-    })
-    
     
     output$matrix <- DT::renderDataTable({
         if(is.null(matrizDatos$datos) ){
@@ -47,21 +55,51 @@ server <- function(input, output, session){
             return(NULL)
         }else{
             closeAlert(session, "messagedatos")
-            DT::datatable(matrizDatos$datos)
+            DT::datatable(matrizDatos$datos, 
+                          style = "bootstrap4", options = list(scrollX=TRUE))
         }            
         })
         
     output$sampleData <- DT::renderDataTable({
         if(is.null(matrizDatos$datos) ){
             createAlert(session, "samplesmessage", alertId ="messagesamples", 
-                        title = "Missing samples info", content = "Please upload sample datatable to preview data about samples", 
+                        title = "Missing samples info",
+                        content = "Please upload sample datatable to preview data about samples", 
                         append = FALSE, style = "danger")
             return(NULL)
         }else{
             closeAlert(session, "messagesamples")
-            DT::datatable(matrizDatos$samples)
+            DT::datatable(matrizDatos$samples,
+                          style = "bootstrap4", options = list(scrollX=TRUE))
         }
         })
+    
+## tab del PCA plot ###################################
+    output$varsel <- renderUI({
+        selectInput("varselected", label="Select vars (max. 3)",
+                       choices = names(matrizDatos$samples), multiple=3, selected=NULL)
+    })
+    
+   output$pcaplot <- renderPlot({
+       if(is.null(input$varselected) ){
+           createAlert(session, "pcamessage", alertId ="messagepca", 
+                       title = "Missing variable info",
+                       content = "Please select var(s) to colour", 
+                       append = FALSE, style = "danger")
+           return(NULL)
+       }else{
+            closeAlert(session, "messagepca")
+            variables <- unite( matrizDatos$samples, col = "variable", input$varselected, sep="_" )$variable
+            PCAdf <- PCA(matrizDatos$datos, graph = F)
+            if(input$tipopca=="ind"){
+                fviz_pca_ind(PCAdf, col.ind = variables)
+           }else if(input$tipopca=="biplot"){
+               fviz_pca_biplot(PCAdf, col.ind = variables)
+           }else{
+               fviz_pca_var(PCAdf)
+           }
+        }
+   }) 
 }
 #
 shinyApp(ui = ui, server = server)

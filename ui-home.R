@@ -48,15 +48,17 @@ tabPanel("Home",
                 ) ),
                 br(),
                 fluidRow(
-                    column(width = 8,
+                    column(width = 8, offset = 2, 
                            box( width = 12, status = "info",
                                 bsAlert("datosmessage"),
                                 DT::dataTableOutput("matrix")
                            )
-                    ),
-                    column(width = 4, 
-                           bsAlert("samplesmessage"),
+                    )),
+                br(),
+                fluidRow(
+                    column(width = 6, offset = 3, 
                            box( width = 12 ,status = "info",
+                                bsAlert("samplesmessage"),
                                 DT::dataTableOutput("sampleData")
                            ) 
                     )
