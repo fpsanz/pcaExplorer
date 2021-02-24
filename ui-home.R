@@ -48,7 +48,9 @@ tabPanel("Home",
                 ) ),
                 br(),
                 fluidRow(
-                    column(width = 8, offset = 2, 
+                    column(2, 
+                           uiOutput("kmo") ),
+                    column(width = 8, 
                            box( width = 12, status = "info",
                                 bsAlert("datosmessage"),
                                 DT::dataTableOutput("matrix")
