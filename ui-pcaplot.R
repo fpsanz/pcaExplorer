@@ -5,8 +5,8 @@ tabPanel("PCAplot",
                             choices =list(Individuals="ind",Variables="vars",Biplot="biplot"),
                             selected = "ind")
                 ),
-         column(9, 
+         column(8, 
                 bsAlert("pcamessage"),
-                plotOutput("pcaplot") 
+                plotOutput("pcaplot", width = "100%", height = "600px") 
                 )
 )# tabpanel pcaplot

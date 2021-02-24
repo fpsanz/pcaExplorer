@@ -81,6 +81,7 @@ server <- function(input, output, session){
     })
     
    output$pcaplot <- renderPlot({
+       validate(need(input$varselected,""))
        if(is.null(input$varselected) ){
            createAlert(session, "pcamessage", alertId ="messagepca", 
                        title = "Missing variable info",
@@ -92,11 +93,11 @@ server <- function(input, output, session){
             variables <- unite( matrizDatos$samples, col = "variable", input$varselected, sep="_" )$variable
             PCAdf <- PCA(matrizDatos$datos, graph = F)
             if(input$tipopca=="ind"){
-                fviz_pca_ind(PCAdf, col.ind = variables)
+                fviz_pca_ind(PCAdf, col.ind = variables, pointsize=3, labelsize=5)+ theme(text = element_text(size=18))
            }else if(input$tipopca=="biplot"){
-               fviz_pca_biplot(PCAdf, col.ind = variables)
+               fviz_pca_biplot(PCAdf, col.ind = variables, pointsize=3, labelsize=5)+ theme(text = element_text(size=18))
            }else{
-               fviz_pca_var(PCAdf)
+               fviz_pca_var(PCAdf, pointsize=3, labelsize=5)+ theme(text = element_text(size=18))
            }
         }
    }) 
