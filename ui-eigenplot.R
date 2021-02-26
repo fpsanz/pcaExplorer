@@ -1,1 +1,0 @@
-tabPanel("EigenPlot") # tabpanel eigenplot

@@ -3,7 +3,7 @@ tabPanel("Home",
              width = 2,
              box(
                  width = 12,
-                 height = "900px",
+                 height = "800px",
                  title = "",
                  status = "info",
                  column(width = 11, offset = 1,
