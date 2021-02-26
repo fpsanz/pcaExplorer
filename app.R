@@ -3,39 +3,70 @@ library(shinydashboard)
 library(shinythemes)
 library(shinyjs)
 library(shinyWidgets)
+library(shinyalert)
 library(shinyBS)
 library(tidyverse)
 library(FactoMineR)
 library(factoextra)
 library(psych)
+library(corrplot)
 source("aux.R")
-#
 
-ui <- navbarPage(id ="navpanel",
+#
+ui <- fluidPage(
+    fluidRow(class = "kk",
+        column(width = 3,
+               HTML('<a href="https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx" target="_blank"><img src="mircenBlancoNombre.png" alt="micen", style="height:40px; padding-top:5px"></a>')), 
+        column(width = 3, offset = 6,
+               HTML('<a href="http://www.imib.es/web/personal.jsf?id=7961" target="_blank"><img src="imibNombre.png" alt="imib", style="height:40px; padding-top:5px; float:right"></a>') )
+    ),
+    navbarPage(id ="navpanel",
         title ="HolaCaracola",
         theme = shinytheme("superhero"),
         collapsible = TRUE,
+        fluid = TRUE,
         source(file = "ui-home.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-pcaplot.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-corrplot.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-eigenplot.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-hierarplot.R", local = TRUE, encoding = "UTF-8")$value,
-        tags$script(HTML("var header = $('.navbar > .container-fluid > .navbar-collapse');
-                       header.append('<div style=\"float:right\"><ul style=\"list-style-type: none;margin:0;padding:0;overflow:hidden;\"><li style=\"float:left;margin-right: 10px;margin-top: 12px;height: 30px;\"><a href=\"https://jacob.cea.fr/drf/ifrancoisjacob/Pages/Departements/MIRCen/themes/astrocytes-reactifs-biomarqueurs-imagerie-cibles-therapeutiques.aspx\"><img src=\"mircen.png\" alt=\"imib\", style=\"width:90px;\"></a></li><li style=\"float:left;\"><a href=\"http://www.imib.es/web/personal.jsf?id=7961\"><img src=\"imib.png\" alt=\"imib\", style=\"width:60px;\"></a></li></div>');
-                       console.log(header)")),
+        source(file = "ui-help.R", local = TRUE, encoding = "UTF-8")$value,
         includeCSS("./www/mystyle.css"),
-        setShadow( class = "box")
+        setShadow(class = "box"),
+        useShinyalert()
+    )
     )
 #
 server <- function(input, output, session){
     
-    tr <-reactiveValues(count=0)
-    matrizDatos <- reactiveValues()
-    
 ## tab Home #########################################
+    
+    tr <-reactiveValues(count=0) #contador de trasposicion de matriz
+    matrizDatos <- reactiveValues() #contenedor de datos
+    PCA <- reactiveValues(df=NULL)
+    
+    # about button #################
+    observeEvent(input$aboutButton, {
+        shinyalert("PCA explorator", HTML("Authors:<br>
+    Miriam Riquelme Pérez 
+    <a href='https://www.linkedin.com/in/miriam-riquelme-perez/' target='_blank'> 
+    <img src='linkedin_little.svg'> </a> <a href='mailto:miriam.riquelmep@gmail.com'>
+    <img src='email.svg'></a><br>
+    Fernando Pérez Sanz 
+    <a href='https://www.linkedin.com/in/fernandoperez72/' target='_blank'> 
+    <img src='linkedin_little.svg'> 
+    </a> <a href='mailto:fernando.perez@ffis.es'> <img src='email.svg'></a><br>
+    For any suggestion or bug, please contact us"),
+    imageUrl = "dna-svg-small-13.gif", 
+    imageWidth = 200, imageHeight = 100, html=TRUE)})
+    
+    ## reset button ############
+    observeEvent(input$resetbutton,{
+        session$reload()
+    })
+    
     observeEvent(input$matriz,{ # cargar mtriz datos
         matrizDatos$datos <- read.table(input$matriz$datapath, header = T, sep = ";", row.names = 1)
-        
     }) 
     
     # trasponer matriz al pulsar switch
@@ -56,13 +87,13 @@ server <- function(input, output, session){
         kmo <- round( KMO(matrizDatos$datos)$MSA, 3)
         tagList(htmltools::tags$h3(paste0("MSA: ",kmo)),
         br(),
-        htmltools::tags$h4("MSA intervals:"),
-        htmltools::tags$p("Values >0.9: marvelous"),
-        htmltools::tags$p("Values 0.8-0.9: meritorious"),
-        htmltools::tags$p("Values 0.7-0.8: middling "),
-        htmltools::tags$p("Values 0.6-0.7: mediocre"),
-        htmltools::tags$p("Values 0.5-0.6: miserable"),
-        htmltools::tags$p("Values < 0.5: unacceptable"),
+        htmltools::tags$h4(class="mytxtcolor", "MSA intervals:"),
+        htmltools::tags$p(class="mytxtcolor", "Values >0.9: marvelous"),
+        htmltools::tags$p(class="mytxtcolor", "Values 0.8-0.9: meritorious"),
+        htmltools::tags$p(class="mytxtcolor", "Values 0.7-0.8: middling "),
+        htmltools::tags$p(class="mytxtcolor", "Values 0.6-0.7: mediocre"),
+        htmltools::tags$p(class="mytxtcolor", "Values 0.5-0.6: miserable"),
+        htmltools::tags$p(class="mytxtcolor", "Values < 0.5: unacceptable"),
         
         )
     })
@@ -124,21 +155,36 @@ server <- function(input, output, session){
         }else{
             closeAlert(session, "messagepca")
             variables <- unite( matrizDatos$samples, col = "variable", input$varselected, sep="_" )$variable
-            PCAdf <- PCA(matrizDatos$datos, graph = F)
+            PCA$df <- PCA(matrizDatos$datos, graph = F)
             if(input$tipopca=="ind"){
-                fviz_pca_ind(PCAdf, col.ind = variables, pointsize=3,
+                fviz_pca_ind(PCA$df, col.ind = variables, pointsize=3,
                              labelsize=5, axes = as.numeric(input$ndmax))+
                     theme(text = element_text(size=18))
             }else if(input$tipopca=="biplot"){
-                fviz_pca_biplot(PCAdf, col.ind = variables, pointsize=3,
+                fviz_pca_biplot(PCA$df, col.ind = variables, pointsize=3,
                                 labelsize=5, axes = as.numeric(input$ndmax))+
                     theme(text = element_text(size=18))
             }else{
-                fviz_pca_var(PCAdf, pointsize=3, labelsize=5, axes = as.numeric(input$ndmax))+
+                fviz_pca_var(PCA$df, pointsize=3, labelsize=5, axes = as.numeric(input$ndmax))+
                     theme(text = element_text(size=18))
             }
         }
    })
+    
+# tab corrplot etc.. ######################
+    ## screeplot ###############
+    output$screeplot <- renderPlot({
+        fviz_eig(PCA$df, addlabels = TRUE, bar_width=0.5)
+    })
+    
+    ## corrplot ########################
+    output$corrplot <- renderPlot({
+        var <- get_pca_var(PCA$df)
+        corrplot(var$cos2, is.corr = FALSE)
+    })
+    
 }
+
+
 #
 shinyApp(ui = ui, server = server)

@@ -3,8 +3,8 @@ tabPanel("CorrPlot",
          column(8,
             bsAlert("corrmessage"),
             h3("Scree plot"),
-            renderPlot("screeplot"),
+            plotOutput("screeplot"),
             h3("Correlation plot"),
-            renderPlot("corrplot")
+            plotOutput("corrplot")
                 )
          ) #tabpanel Corrplot

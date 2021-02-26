@@ -39,12 +39,12 @@ tabPanel("Home",
          ),
          column(10,
                 fluidRow( box( width = 12, status = "info",
-                               title = "PCA explorer App",
-                               h3("Ivan Ferreiro"),
-                               p("Desde aquí, desde mi casa"),
-                               p("Veo la playa vacía"),
-                               p("Ya lo estaba, hace unos días"),
-                               p("Ahora, está llena de lluvia")
+                               title = "PCA explorer App"
+                               # h3("Ivan Ferreiro"),
+                               # p("Desde aquí, desde mi casa"),
+                               # p("Veo la playa vacía"),
+                               # p("Ya lo estaba, hace unos días"),
+                               # p("Ahora, está llena de lluvia")
                 ) ),
                 br(),
                 fluidRow(
