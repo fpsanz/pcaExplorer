@@ -1,4 +1,4 @@
-tabPanel("CorrPlot",
+tabPanel("Correlations",
          column(5,
             h3("Scree plot"),
             bsAlert("screemessage"),

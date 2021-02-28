@@ -4,7 +4,8 @@ tabPanel("PCAplot",
                     uiOutput("dimensions"),
                     selectInput("tipopca", "Select plot",
                                 choices =list(Individuals="ind",Variables="vars",Biplot="biplot"),
-                                selected = "ind")
+                                selected = "ind"),
+                    uiOutput("elipses")
                     ),
              column(8, 
                     bsAlert("pcamessage"),

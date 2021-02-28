@@ -1,4 +1,4 @@
-tabPanel("EigenPlot",
+tabPanel("Contributions",
          tabsetPanel(
              tabPanel("Variables",
                       fluidRow(
