@@ -313,6 +313,38 @@ server <- function(input, output, session){
                 theme(text = element_text(size=20), axis.text.x = element_text(angle=70, hjust=1)) 
         }
     })
+## tab dendrograma ########################
+    output$dendroplot <- renderPlot({
+        if(is.null(matrizDatos$datos) | is.null(PCA$df)){
+            createAlert(session, "dendromessage", alertId ="messagedendro",
+                        title = "Missing PCA object or data table",
+                        content = "Please first upload your data and visit PCAplot tab",
+                        append = FALSE, style = "danger")
+            shiny:::reactiveStop()
+        }else{
+            closeAlert(session, "messagedendro")
+            ColorGroup <- unite( matrizDatos$samples, col = "variable", input$varselected, sep="_" )
+            if(isTRUE(input$dendroswitch)){
+                distSamples <- dist(matrizDatos$datos)
+                hc <- hclust(distSamples, method = "ward.D2")
+                dend <- as.dendrogram(hc)
+                vectColors <- as.numeric(as.factor(ColorGroup$variable))[order.dendrogram(dend)]
+                coloresDendro <- gg_color_hue(vectColors)
+                labels_colors(dend) <- coloresDendro
+                plot(dend, horiz = TRUE, cex.lab = 2)
+            }else{
+                distSamples <- dist(PCA$df$ind$cos2)
+                hc <- hclust(distSamples, method = "ward.D2")
+                dend <- as.dendrogram(hc)
+                vectColors <- as.numeric(as.factor(ColorGroup$variable))[order.dendrogram(dend)]
+                coloresDendro <- gg_color_hue(vectColors)
+                labels_colors(dend) <- coloresDendro
+                plot(dend, horiz = TRUE, cex = 4)
+            }
+        }
+    })
+    
+    
 } #fin server
 
 

@@ -16,3 +16,8 @@ myvalidate <- function (..., errorClass = character(0))
     shiny:::reactiveStop(paste(results, collapse = "\n"), c(errorClass, 
                                                     "validation"))
 }
+
+gg_color_hue <- function(vectColors) {
+    n <- length(unique(vectColors))
+    hue_pal()(n)[vectColors]
+}
