@@ -30,6 +30,7 @@ ui <- fluidPage(
         source(file = "ui-corrplot.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-contributions.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-hierarplot.R", local = TRUE, encoding = "UTF-8")$value,
+        source(file = "ui-hcpc.R", local = TRUE, encoding = "UTF-8")$value,
         source(file = "ui-help.R", local = TRUE, encoding = "UTF-8")$value,
         includeCSS("./www/mystyle.css"),
         setShadow(class = "box"),
@@ -313,6 +314,7 @@ server <- function(input, output, session){
                 theme(text = element_text(size=20), axis.text.x = element_text(angle=70, hjust=1)) 
         }
     })
+# .............................. ###############
 ## tab dendrograma ########################
     output$dendroplot <- renderPlot({
         if(is.null(matrizDatos$datos) | is.null(PCA$df)){
@@ -343,7 +345,49 @@ server <- function(input, output, session){
             }
         }
     })
+    # .............................. ###############
+## tab HCPC ##########################################
+    hcpc <- reactiveValues()
     
+    observeEvent(input$sliderhcpc,{
+        hcpc$pca <- HCPC(PCA$df, nb.clust = input$sliderhcpc, graph = FALSE)
+    })
+    output$hcpc <- renderPlot({
+        if(is.null(PCA$df)){
+            createAlert(session, "hcpcmessage", alertId ="messagehcpc",
+                        title = "Missing PCA object or data table",
+                        content = "Please first upload your data and visit PCAplot tab",
+                        append = FALSE, style = "danger")
+            shiny:::reactiveStop()
+        }else{
+            closeAlert(session, "messagehcpc")
+            plot.HCPC(hcpc$pca, choice = "tree")
+            }
+    })
+    output$clusterhcpc <- renderPlot({
+        if(is.null(PCA$df)){
+            createAlert(session, "hcpcmessage", alertId ="messagehcpc",
+                        title = "Missing PCA object or data table",
+                        content = "Please first upload your data and visit PCAplot tab",
+                        append = FALSE, style = "danger")
+            shiny:::reactiveStop()
+        }else{
+            closeAlert(session, "messagehcpc")
+            plot.HCPC(hcpc$pca, choice = "map", draw.tree = FALSE)
+        }
+    })
+    output$dendrohcpc <- renderPlot({
+        if(is.null(PCA$df)){
+            createAlert(session, "hcpcmessage", alertId ="messagehcpc",
+                        title = "Missing PCA object or data table",
+                        content = "Please first upload your data and visit PCAplot tab",
+                        append = FALSE, style = "danger")
+            shiny:::reactiveStop()
+        }else{
+            closeAlert(session, "messagehcpc")
+            plot.HCPC(hcpc$pca, choice = "3D.tree", draw.tree = FALSE)
+        }
+    })
     
 } #fin server
 

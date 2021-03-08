@@ -1,6 +1,6 @@
 tabPanel("HierachicalPlot",
          column(3,
-                tags$h4("Select data for hierachical cluster"),
+                tags$h4("Select data for hierarchical cluster"),
                 switchInput("dendroswitch", value = TRUE, onLabel = "raw", offLabel = "pca",
                             onStatus = "primary", offStatus = "danger")
                 ),
