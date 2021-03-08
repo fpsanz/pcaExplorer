@@ -1,3 +1,3 @@
 tabPanel("Help", 
-         htmltools::includeMarkdown("./www/help.Rmd")
+         shiny::includeMarkdown("./www/help.md")
          ) #tabpanel hierachicalplot
