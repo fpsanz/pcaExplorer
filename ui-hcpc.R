@@ -6,8 +6,16 @@ tabPanel("HCPC",
          column(8,
                 tags$h3("Interactive hierarchical cluster on PCA"),
                 bsAlert("hcpcmessage"),
-                plotOutput("hcpc"),
-                plotOutput("clusterhcpc"),
-                plotOutput("dendrohcpc")
+                fluidRow(
+                    column(width = 6,
+                           plotOutput("hcpc")
+                ),
+                    column(width=6,
+                           plotOutput("clusterhcpc"))
+                ),
+                br(),
+                fluidRow(
+                    plotOutput("dendrohcpc")
+                )
          )
 ) #tabpanel hierachicalplot

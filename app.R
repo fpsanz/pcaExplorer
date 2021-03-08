@@ -10,6 +10,8 @@ library(FactoMineR)
 library(factoextra)
 library(psych)
 library(corrplot)
+library(scales)
+library(dendextend)
 source("aux.R")
 
 #
@@ -21,7 +23,7 @@ ui <- fluidPage(
                HTML('<a href="http://www.imib.es/web/personal.jsf?id=7961" target="_blank"><img src="imibNombre.png" alt="imib", style="height:40px; padding-top:3px; float:right"></a>') )
     ),
     navbarPage(id ="navpanel",
-        title ="HolaCaracola",
+        title ="Multivariate explorer",
         theme = shinytheme("superhero"),
         collapsible = TRUE,
         fluid = TRUE,
@@ -45,6 +47,7 @@ server <- function(input, output, session){
     tr <-reactiveValues(count=0) #contador de trasposicion de matriz
     matrizDatos <- reactiveValues() #contenedor de datos
     PCA <- reactiveValues(df=NULL)
+    hcpc <- reactiveValues()
     
     # about button #################
     observeEvent(input$aboutButton, {
@@ -162,6 +165,7 @@ server <- function(input, output, session){
             closeAlert(session, "messagepca")
             variables <- unite( matrizDatos$samples, col = "variable", input$varselected, sep="_" )$variable
             PCA$df <- PCA(matrizDatos$datos, graph = F)
+            hcpc$pca <- HCPC(PCA$df, nb.clust = 2, graph = FALSE)
             if(input$tipopca=="ind"){
                 fviz_pca_ind(PCA$df, col.ind = variables, pointsize=3,
                              labelsize=5, axes = as.numeric(input$ndmax), addEllipses = input$elipses)+
@@ -347,11 +351,13 @@ server <- function(input, output, session){
     })
     # .............................. ###############
 ## tab HCPC ##########################################
-    hcpc <- reactiveValues()
+
     
     observeEvent(input$sliderhcpc,{
+        validate(need(PCA$df,""))
         hcpc$pca <- HCPC(PCA$df, nb.clust = input$sliderhcpc, graph = FALSE)
     })
+    
     output$hcpc <- renderPlot({
         if(is.null(PCA$df)){
             createAlert(session, "hcpcmessage", alertId ="messagehcpc",
@@ -366,26 +372,16 @@ server <- function(input, output, session){
     })
     output$clusterhcpc <- renderPlot({
         if(is.null(PCA$df)){
-            createAlert(session, "hcpcmessage", alertId ="messagehcpc",
-                        title = "Missing PCA object or data table",
-                        content = "Please first upload your data and visit PCAplot tab",
-                        append = FALSE, style = "danger")
             shiny:::reactiveStop()
         }else{
-            closeAlert(session, "messagehcpc")
             plot.HCPC(hcpc$pca, choice = "map", draw.tree = FALSE)
         }
     })
     output$dendrohcpc <- renderPlot({
         if(is.null(PCA$df)){
-            createAlert(session, "hcpcmessage", alertId ="messagehcpc",
-                        title = "Missing PCA object or data table",
-                        content = "Please first upload your data and visit PCAplot tab",
-                        append = FALSE, style = "danger")
             shiny:::reactiveStop()
         }else{
-            closeAlert(session, "messagehcpc")
-            plot.HCPC(hcpc$pca, choice = "3D.tree", draw.tree = FALSE)
+            plot.HCPC(hcpc$pca, choice = "3D.map")
         }
     })
     
